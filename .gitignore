@@ -18,6 +18,7 @@ name_matcher_cache/
 
 # OS junk
 .DS_Store
+._*
 
 # Editor
 .vscode/settings.local.json
