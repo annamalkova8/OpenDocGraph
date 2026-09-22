@@ -22,3 +22,6 @@ name_matcher_cache/
 
 # Editor
 .vscode/settings.local.json
+
+application.md
+git_instr.md
