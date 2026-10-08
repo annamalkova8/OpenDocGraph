@@ -1,4 +1,3 @@
-"""Shared node/edge shape every source adapter yields. See READ_graph_bd.md."""
 from dataclasses import dataclass, field
 from typing import Any, Optional
 

@@ -6,13 +6,13 @@ def extract_links_proper(html):
     article's "Sovereign states of Europe"-style navbox (or any other membership-list template —
     G7, G20, EU members, etc.) leaks in as if every other country listed there were a genuine
     in-article link — e.g. France and Italy end up "linked" purely because a shared navbox lists
-    both, not because either article's actual prose mentions the other. geohistorical_extractor.py's
+    both, not because either article's actual prose mentions the other. utils/geohistorical_extractor.py's
     extract_page_text() already strips navbox for the same reason (its own docstring: "leak sibling-
     article lists... into the page's own text"); this function does the identical thing for links,
     which it was missing before."""
     soup = BeautifulSoup(html, "lxml")
 
-    # 🔥 БЕРЁМ ТОЛЬКО ОСНОВНОЙ КОНТЕНТ
+    # Use only the main article content
     content = soup.find("div", {"id": "mw-content-text"})
     if not content:
         content = soup
@@ -40,15 +40,15 @@ def extract_links_proper(html):
     for a in content.find_all("a", href=True):
         href = a["href"]
 
-        # пропускаем внешние
+        # skip external links
         if href.startswith("http"):
             continue
 
-        # нормализация
+        # normalise
         href = href.split("#")[0]
         href = href.replace("../", "").strip()
 
-        # фильтр мусора
+        # filter junk
         if not href:
             continue
 

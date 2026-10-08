@@ -1,7 +1,11 @@
 # Universality: adding Europeana as a second source
 
-Written against `geohistorical_extractor.py` (see `READ_graph_bd.md` for the pipeline this feeds).
+Written against `utils/geohistorical_extractor.py` (see `README.md` for the pipeline this feeds).
 Research + design only — no changes to the production script yet.
+
+> **Note on bundled data:** this document records research on four Europeana datasets (1433, 215, 1200,
+> 739). Only `1433` and `1200` ship in `data/europeana_sample/`; `215` and `739` contain CC BY-NC-ND
+> material and were removed from the repository. Their findings are kept below as research notes.
 
 ## 1. How to load Europeana data
 
@@ -56,7 +60,7 @@ GET https://api.europeana.eu/record/v2/search.json?wskey=api2demo&query=*&qf=TYP
 record counts against a HEAD request on the FTP zip, and pulled the two smallest:
 **dataset 215** (Royal Irish Academy / Digital Repository of Ireland, 8 records, ~28 KB) and
 **dataset 1200** (University of Cyprus, 88 records of digitized early-modern Greek/Latin printed
-books, ~680 KB). Both are in `data/europeana_sample/`.
+books, ~680 KB). Only dataset 1200 is kept in `data/europeana_sample/` (215 was removed for licence reasons).
 
 Two things this surfaced that materially change §2/§3 below:
 
@@ -151,7 +155,7 @@ already source-agnostic since it only deals with `nodes`/`edges` rows.
 ## 4. Suggested next step
 
 Prototype `EuropeanaSource` standalone (a script that pulls ~500–1000 records via the Search API
-and prints the proposed node/edge mapping) before wiring it into `geohistorical_extractor.py` — lets
+and prints the proposed node/edge mapping) before wiring it into `utils/geohistorical_extractor.py` — lets
 us validate the field mapping against real records without touching the production path. Ask before
 starting that prototype, since it needs a Europeana API key to be requested first.
 
@@ -164,8 +168,8 @@ Looked specifically for a dataset rich enough to build a real object→creator�
 how they change the picture:
 
 **Found**: dataset 739, a cross-institution fashion/jewelry/costume collection (Rijksmuseum is the
-largest single contributor, alongside a few Austrian/Dutch museums) — 3,766 records full size, trimmed to 151 for the repo (every ~25th kept for spread across sub-collections), in
-`data/europeana_sample/739/`. Picked via the Search API's `DATA_PROVIDER` facet restricted to
+largest single contributor, alongside a few Austrian/Dutch museums) — 3,766 records full size, trimmed to 151 for testing (every ~25th kept for spread across sub-collections); not bundled in
+this repository (licence). Picked via the Search API's `DATA_PROVIDER` facet restricted to
 `contentTier:4`/`metadataTier:A` (Europeana's own quality tiers), which surfaced it as a genuinely
 well-curated, high-volume, image-heavy dataset rather than a random guess.
 

@@ -1,8 +1,3 @@
-"""Europeana EDM source adapter. Parses local EDM/RDF-XML dumps (data/europeana_sample/<id>/).
-No network calls except resolve_creators=True (Entity API, cached to output/europeana_entity_cache.json).
-Field-reliability findings (dc:coverage vs dcterms:spatial, edm:type=TEXT, creator-URI proxy
-location, date ranges) are in docs/EUROPEANA_ADAPTER_DESIGN.md, not repeated here.
-"""
 import glob
 import json
 import os

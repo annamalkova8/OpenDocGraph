@@ -1,6 +1,3 @@
-"""Config-driven entry point. Pick a CONFIG preset below, run this file. See READ_graph_bd.md for
-architecture, the preset table, and what CONFIG.extraction actually does (and doesn't) control.
-"""
 import json
 import sqlite3
 from collections import Counter
@@ -31,7 +28,7 @@ class EuropeanaConfig:
 
 @dataclass
 class ExtractionConfig:
-    """Informational only — see READ_graph_bd.md. Doesn't filter or change extraction."""
+    """Informational only — see README.md. Doesn't filter or change extraction."""
     main_node_types: frozenset = frozenset()
     sub_node_types: frozenset = frozenset()
 
@@ -87,9 +84,7 @@ def _europeana_dataset_config(dataset_id):
 
 
 EUROPEANA_1433_CONFIG = _europeana_dataset_config("1433")  # prints & engravings, Italy
-EUROPEANA_215_CONFIG = _europeana_dataset_config("215")    # text documents, Ireland
 EUROPEANA_1200_CONFIG = _europeana_dataset_config("1200")  # digitized early-modern books, Cyprus
-EUROPEANA_739_CONFIG = _europeana_dataset_config("739")    # fashion/jewelry collection
 
 CONFIG = WIKI_SAMPLE_CONFIG
 

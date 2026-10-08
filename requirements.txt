@@ -1,0 +1,7 @@
+pyahocorasick
+libzim
+beautifulsoup4
+lxml
+numpy
+rapidfuzz
+pyvis

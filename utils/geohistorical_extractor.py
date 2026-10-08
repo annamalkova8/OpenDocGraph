@@ -1,20 +1,5 @@
-"""
-Builds a city-centered link-graph of geo/entity Wikipedia articles from the .zim archive
-(replacement for __step_prolog_wiki.py's seed lists). Full design: READ_graph_bd.md.
-
-  Phase 1 (classify) — node_type (city/country/region/tribe/culture) via infobox + lead-keyword +
-    coords signals, no text extraction yet. Also captures lat/lon and a best-effort founding year
-    (see extract_coords/extract_founding_year).
-  Phase 2 (extract) — pulls full text + hyperlink edges (edge_source='link'); city-to-city links
-    are excluded (near-always editorial/etymological, not a real subnode relationship).
-  Phase 3 (link) — connects entities to cities by name cross-reference (edge_source='name_match').
-  Disambiguator-linking pass — matches a city's disambiguator suffix to an in-graph non-city node
-    (edge_source='disambiguator_match'); runs after Phase 3.
-
-Resumable, single writer thread (SQLite conns aren't thread-shareable). Standalone/long-running,
-not wired into steps 1-7 yet; tune PHASE1_ENTRY_LIMIT down for a smoke test.
-"""
 import json
+import os
 import queue
 import re
 import sqlite3
@@ -29,21 +14,21 @@ import ahocorasick
 import libzim
 from bs4 import BeautifulSoup
 
-# FUND_restack is self-contained: utils/ and names_search.py both live directly in this folder, so
-# the only sys.path entry ever needed is this folder itself (added so these imports resolve
-# regardless of the current working directory or how this module was reached).
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+# The repo root is the only sys.path entry needed (added so `utils.*` imports resolve regardless of
+# the current working directory or how this module was reached).
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
 from utils.extract_links import extract_links_proper  # noqa: E402
 
 # Fuzzy+embedding NameMatcher the disambiguator-linking pass uses; imported directly (not via
 # common.py) to avoid common.py's unrelated vLLM-client/dotenv side effects.
-from names_search import NameMatcher, STATE_NOISE_TERMS  # noqa: E402
+from utils.names_search import NameMatcher, STATE_NOISE_TERMS  # noqa: E402
 
 # "zim" = ZIM_PATH (needs libzim + the 124GB file). "sample" = data/wiki_sample/, no download needed.
 SOURCE_FORMAT = "sample"
 
-ZIM_PATH = "/Volumes/T7/AI_HISTORICA/Archive/anna/DEV/wikipedia_en_all_maxi_2026-02.zim"
-SAMPLE_DIR = Path(__file__).resolve().parent / "data" / "wiki_sample"
+ZIM_PATH = os.environ.get("ZIM_PATH", "wikipedia_en_all_maxi.zim")  # set the ZIM_PATH env var to your .zim file
+SAMPLE_DIR = _ROOT / "data" / "wiki_sample"
 
 # Not on the .zim's ExFAT drive — ExFAT's POSIX locking is flaky on macOS and caused persistent
 # "readonly database" errors there; APFS is reliable. Reading the .zim from ExFAT is fine.
@@ -61,11 +46,11 @@ PHASE1_ENTRY_LIMIT = None
 RUN_DISAMBIGUATOR_LINK_PASS = True
 
 # Own cache — different corpus (this graph's own non-city node titles, not the main dataset's).
-DISAMBIGUATOR_MATCHER_CACHE_PATH = Path(__file__).resolve().parent / "output" / "name_matcher_cache" / "disambiguator_titles.pkl"
+DISAMBIGUATOR_MATCHER_CACHE_PATH = _ROOT / "output" / "name_matcher_cache" / "disambiguator_titles.pkl"
 DISAMBIGUATOR_MATCH_MIN_SCORE = 0.85  # higher than NAME_CLASSIFIER_MIN_SCORE — a wrong edge here pollutes prompt grounding, not just node_type
 
 
-# SampleArchive: minimal libzim.Archive-compatible shim over data/wiki_sample/. See READ_graph_bd.md.
+# SampleArchive: minimal libzim.Archive-compatible shim over data/wiki_sample/. See README.md.
 class _SampleItem:
     def __init__(self, content_bytes):
         self.content = content_bytes
@@ -315,6 +300,8 @@ def _is_meta_topic_article(title):
 
 def classify_node(html_str, title=None):
     """Combines the three signals above, strongest first. Returns (node_type, source), source being "infobox"|"keyword"|"coords", or (None, None) if not a node."""
+    if title:
+        title = title.replace("_", " ")  # tolerate filename-style titles; the keyword signal matches against spaced prose
     if _is_meta_topic_article(title):
         return None, None
 
@@ -347,7 +334,7 @@ def classify_node(html_str, title=None):
         if _title_is_non_settlement(title):
             # Geo-tagged but the title names an institution/landmark/event, not a settlement.
             return None, None
-        # Weakest tier — see READ_graph_bd.md; filter on classification_source='coords' to exclude.
+        # Weakest tier — see README.md; filter on classification_source='coords' to exclude.
         return "city", "coords"
 
     return None, None

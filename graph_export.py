@@ -1,4 +1,3 @@
-"""JSON and pyvis-HTML writers for the pipeline's nodes/edges schema. See READ_graph_bd.md."""
 import json
 import sqlite3
 from collections import Counter

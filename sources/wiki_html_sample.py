@@ -1,6 +1,3 @@
-"""Reads data/wiki_sample/*.html through geohistorical_extractor.py's own classify_node/
-extract_coords/extract_founding_year (imported, not duplicated). See READ_graph_bd.md.
-"""
 import glob
 import json
 import os
@@ -15,7 +12,7 @@ class WikiHtmlSampleSource(SourceAdapter):
         self.should_extract_dates = extract_dates
 
     def iter_nodes(self):
-        from geohistorical_extractor import classify_node, extract_coords, extract_founding_year
+        from utils.geohistorical_extractor import classify_node, extract_coords, extract_founding_year
         from utils.extract_links import extract_links_proper
 
         manifest_path = os.path.join(self.sample_dir, "manifest.json")

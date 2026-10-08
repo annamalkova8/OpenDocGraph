@@ -189,28 +189,9 @@ class NameMatcher:
 
 
 if __name__ == "__main__":
-    import json
-
-    DATA_DIR = Path(__file__).parent
-
-    # EXAMPLE
-    names = (
-        json.loads((DATA_DIR / "all_states_names.json").read_text(encoding="utf-8"))
-        + json.loads((DATA_DIR / "all_regions_names.json").read_text(encoding="utf-8"))
-        + json.loads((DATA_DIR / "all_towns_names.json").read_text(encoding="utf-8"))
-    )
-    matcher = NameMatcher(names)
+    # Tiny demo: fuzzy matching works without Ollama; embeddings are used when it is available.
+    matcher = NameMatcher(["France", "Germany", "Tokyo", "Minas Gerais", "Kingdom of Jin"])
     print(f"corpus: {len(matcher)} names")
-
-    input_names = [
-        "Kingdom of France",
-        "Dutch",
-        "Minas Gerias",  
-        "Tokyo",
-        "Wakanda",
-        "Jin", "Qi", "Tang",
-        "village"
-    ]
-
-    for row in matcher.classify_batch(input_names, min_score=0.75, noise_terms=STATE_NOISE_TERMS):
+    for row in matcher.classify_batch(["Kingdom of France", "Minas Gerias", "Wakanda"],
+                                      min_score=0.75, noise_terms=STATE_NOISE_TERMS):
         print(row)
